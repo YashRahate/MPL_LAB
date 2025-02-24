@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "513404948876",
+    "project_id": "seniorcitizenassistant",
+    "storage_bucket": "seniorcitizenassistant.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:513404948876:android:9b5864965d3cbb6d46c6a9",
+        "android_client_info": {
+          "package_name": "com.example.sca"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_UGUGTVJCrccurRvXrWJBWFST_Mbiz80"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
