@@ -18,6 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   String _username = "User";
   bool _isLoading = true;
+  final PageController _pageController = PageController();
 
   final List<Widget> _screens = [
     const MedicationRemindersScreen(),
@@ -32,39 +33,59 @@ class _HomeScreenState extends State<HomeScreen> {
     _getUserInfo();
   }
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   Future<void> _getUserInfo() async {
-  try {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      // Enable offline persistence if not already configured
-      FirebaseFirestore.instance.settings = 
-          Settings(persistenceEnabled: true, cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED);
-          
-      final userData = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-      
-      if (userData.exists) {
-        setState(() {
-          _username = userData.data()?['username'] ?? "User";
-          _isLoading = false;
-        });
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Enable offline persistence if not already configured
+        FirebaseFirestore.instance.settings = 
+            Settings(persistenceEnabled: true, cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED);
+            
+        final userData = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        
+        if (userData.exists) {
+          setState(() {
+            _username = userData.data()?['username'] ?? "User";
+            _isLoading = false;
+          });
+        } else {
+          setState(() => _isLoading = false);
+        }
       } else {
         setState(() => _isLoading = false);
       }
-    } else {
-      setState(() => _isLoading = false);
+    } catch (e) {
+      print("Error fetching user data: $e");
+      // Still show the UI even if there's an error
+      setState(() {
+        _isLoading = false;
+        _username = "User"; // Fallback username
+      });
     }
-  } catch (e) {
-    print("Error fetching user data: $e");
-    // Still show the UI even if there's an error
+  }
+
+  void _onPageChanged(int index) {
     setState(() {
-      _isLoading = false;
-      _username = "User"; // Fallback username
+      _currentIndex = index;
     });
   }
-}
+
+  void _onItemTapped(int index) {
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,14 +139,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: _screens[_currentIndex],
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        children: _screens,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
         backgroundColor: const Color(0xFF283593), // Deep indigo
         selectedItemColor: Colors.white,
