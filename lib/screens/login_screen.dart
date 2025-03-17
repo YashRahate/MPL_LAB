@@ -27,9 +27,9 @@ class _LoginScreenState extends State<LoginScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF4E342E), // Deep brown
-              Color(0xFF6A1B9A), // Rich purple
-              Color(0xFF283593), // Deep indigo
+              Color(0xFF4E342E),
+              Color(0xFF6A1B9A),
+              Color(0xFF283593),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -70,8 +70,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (value == null || value.isEmpty) {
                         return "Please enter your password";
                       }
-                      if (value.length < 6) {
-                        return "Password must be at least 6 characters";
+                      if (value.length < 8) {
+                        return "Password must be at least 8 characters";
                       }
                       return null;
                     },
@@ -95,7 +95,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _loginUser(BuildContext context) async {
     try {
-      // Show a loading indicator
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -103,22 +102,37 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       // Attempt to log in
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailTextController.text.trim(),
         password: _passwordTextController.text.trim(),
       );
 
-      print("Logged in successfully: ${userCredential.user!.email}");
+      User? user = userCredential.user;
+
+      // Check if the email is verified
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification(); // Send verification email
+        Navigator.pop(context);
+        _showErrorDialog(
+          context,
+          "Please verify your email. A verification link has been sent to your email.",
+        );
+        return;
+      }
+
+      if (user != null) {
+        print("Logged in successfully: ${user.email}");
+      }
 
       // Navigate to HomeScreen after successful login
-      Navigator.pop(context); // Close the loading indicator
+      Navigator.pop(context);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),
       );
     } catch (error) {
-      Navigator.pop(context); // Close the loading indicator
+      Navigator.pop(context);
       _showErrorDialog(context, error.toString());
     }
   }

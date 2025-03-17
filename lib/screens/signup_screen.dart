@@ -85,8 +85,8 @@ class _SignupScreenState extends State<SignupScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Password is required';
                       }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters long';
+                      if (value.length < 8) {
+                        return 'Password must be at least 8 characters long';
                       }
                       return null;
                     },
@@ -105,42 +105,50 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  void _signupUser() {
-    if (_formKey.currentState?.validate() ?? false) {
+void _signupUser() {
+  if (_formKey.currentState?.validate() ?? false) {
+    setState(() {
+      _isLoading = true;
+    });
+
+    FirebaseAuth.instance
+        .createUserWithEmailAndPassword(
+      email: _emailTextController.text.trim(),
+      password: _passwordTextController.text.trim(),
+    )
+        .then((value) async {
+      User? user = value.user;
+
+      if (user != null) {
+        // Save user details to Firestore
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'username': _userNameTextController.text.trim(),
+          'email': _emailTextController.text.trim(),
+        });
+
+        await user.sendEmailVerification(); // Ensure email verification
+      }
+
       setState(() {
-        _isLoading = true;
+        _isLoading = false;
       });
-      FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-        email: _emailTextController.text,
-        password: _passwordTextController.text,
-      )
-          .then((value) {
-        // Save additional user info (e.g., username) in Firebase Firestore
-        FirebaseFirestore.instance
-            .collection('users')
-            .doc(value.user?.uid)
-            .set({
-          'username': _userNameTextController.text,
-          'email': _emailTextController.text,
-        });
 
-        setState(() {
-          _isLoading = false;
-        });
+      print("Created new account");
 
-        print("Created new account");
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => HomeScreen()));
-      }).catchError((error) {
-        setState(() {
-          _isLoading = false;
-        });
-        print("Error: ${error.toString()}");
-        _showErrorDialog("Failed to create an account. Please try again.");
+      // Navigate to HomeScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    }).catchError((error) {
+      setState(() {
+        _isLoading = false;
       });
-    }
+      print("Error: ${error.toString()}");
+      _showErrorDialog("Failed to create an account. Please try again.");
+    });
   }
+}
 
   void _showErrorDialog(String message) {
     showDialog(

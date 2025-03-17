@@ -42,34 +42,60 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _getUserInfo() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        // Enable offline persistence if not already configured
-        FirebaseFirestore.instance.settings = 
-            Settings(persistenceEnabled: true, cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED);
-            
-        final userData = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-        
-        if (userData.exists) {
-          setState(() {
-            _username = userData.data()?['username'] ?? "User";
-            _isLoading = false;
-          });
-        } else {
-          setState(() => _isLoading = false);
-        }
-      } else {
+      if (user == null) {
         setState(() => _isLoading = false);
+        return;
+      }
+
+      // Force Firestore to fetch fresh data first
+      DocumentSnapshot<Map<String, dynamic>> userData = await FirebaseFirestore
+          .instance
+          .collection('users')
+          .doc(user.uid)
+          .get(const GetOptions(
+              source: Source.serverAndCache)); // Forces online fetch
+
+      if (userData.exists) {
+        setState(() {
+          _username = userData.data()?['username'] ?? "User";
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+          _username = "User"; // Fallback
+        });
       }
     } catch (e) {
       print("Error fetching user data: $e");
-      // Still show the UI even if there's an error
-      setState(() {
-        _isLoading = false;
-        _username = "User"; // Fallback username
-      });
+
+      // Handle offline mode by trying from cache
+      try {
+        DocumentSnapshot<Map<String, dynamic>> cachedData =
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(FirebaseAuth.instance.currentUser!.uid)
+                .get(
+                    const GetOptions(source: Source.cache)); // Fetch from cache
+
+        if (cachedData.exists) {
+          setState(() {
+            _username = cachedData.data()?['username'] ?? "User";
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+            _username = "User";
+          });
+        }
+      } catch (cacheError) {
+        print("Error fetching user data from cache: $cacheError");
+        setState(() {
+          _isLoading = false;
+          _username = "User"; // Fallback
+        });
+      }
     }
   }
 
