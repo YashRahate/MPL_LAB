@@ -105,18 +105,19 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-void _signupUser() {
+Future<void> _signupUser() async {
   if (_formKey.currentState?.validate() ?? false) {
     setState(() {
       _isLoading = true;
     });
 
-    FirebaseAuth.instance
-        .createUserWithEmailAndPassword(
-      email: _emailTextController.text.trim(),
-      password: _passwordTextController.text.trim(),
-    )
-        .then((value) async {
+    try {
+      // Create user with Firebase Authentication
+      UserCredential value = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailTextController.text.trim(),
+        password: _passwordTextController.text.trim(),
+      );
+
       User? user = value.user;
 
       if (user != null) {
@@ -126,28 +127,47 @@ void _signupUser() {
           'email': _emailTextController.text.trim(),
         });
 
-        await user.sendEmailVerification(); // Ensure email verification
+        // Send email verification
+        await user.sendEmailVerification();
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        // Show dialog prompting email verification
+        _showVerificationDialog();
       }
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      print("Created new account");
-
-      // Navigate to HomeScreen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
-    }).catchError((error) {
+    } catch (error) {
       setState(() {
         _isLoading = false;
       });
       print("Error: ${error.toString()}");
       _showErrorDialog("Failed to create an account. Please try again.");
-    });
+    }
   }
+}
+
+
+void _showVerificationDialog() {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Verify Your Email'),
+      content: Text(
+          'A verification email has been sent to ${_emailTextController.text.trim()}. Please verify your email before logging in.'),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+            );
+          },
+          child: Text('OK'),
+        ),
+      ],
+    ),
+  );
 }
 
   void _showErrorDialog(String message) {

@@ -92,66 +92,95 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
-  Future<void> _loginUser(BuildContext context) async {
-    try {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => Center(child: CircularProgressIndicator()),
-      );
-
-      // Attempt to log in
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailTextController.text.trim(),
-        password: _passwordTextController.text.trim(),
-      );
-
-      User? user = userCredential.user;
-
-      // Check if the email is verified
-      if (user != null && !user.emailVerified) {
-        await user.sendEmailVerification(); // Send verification email
-        Navigator.pop(context);
-        _showErrorDialog(
-          context,
-          "Please verify your email. A verification link has been sent to your email.",
-        );
-        return;
-      }
-
-      if (user != null) {
-        print("Logged in successfully: ${user.email}");
-      }
-
-      // Navigate to HomeScreen after successful login
-      Navigator.pop(context);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
-    } catch (error) {
-      Navigator.pop(context);
-      _showErrorDialog(context, error.toString());
-    }
-  }
-
-  void _showErrorDialog(BuildContext context, String message) {
+  
+Future<void> _loginUser(BuildContext context) async {
+  try {
+    // Show a loading indicator
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Login Failed"),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("OK"),
-          ),
-        ],
-      ),
+      barrierDismissible: false,
+      builder: (context) => Center(child: CircularProgressIndicator()),
     );
+
+    // Attempt to log in
+    UserCredential userCredential =
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: _emailTextController.text.trim(),
+      password: _passwordTextController.text.trim(),
+    );
+
+    User? user = userCredential.user;
+
+    // Check if the email is verified
+    if (user != null && !user.emailVerified) {
+      // Send verification email
+      await user.sendEmailVerification();
+
+      // Close loading indicator
+      Navigator.pop(context);
+
+      // Show dialog prompting for email verification
+      _showEmailVerificationDialog(context);
+      return;
+    }
+
+    if (user != null) {
+      print("Logged in successfully: ${user.email}");
+    }
+
+    // Close loading indicator
+    Navigator.pop(context);
+
+    // Navigate to HomeScreen after successful login
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => HomeScreen()),
+    );
+  } catch (error) {
+    // Close loading indicator
+    Navigator.pop(context);
+
+    // Show login failure dialog
+    _showLoginFailureDialog(context, error.toString());
   }
+}
+
+void _showEmailVerificationDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text("Email Verification Required"),
+      content: Text(
+          "Your email is not verified. A verification link has been sent to your email. Please verify your email before logging in."),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Text("OK"),
+        ),
+      ],
+    ),
+  );
+}
+
+void _showLoginFailureDialog(BuildContext context, String errorMessage) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text("Login Failed"),
+      content: Text(errorMessage),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Text("OK"),
+        ),
+      ],
+    ),
+  );
+}
 
   Row signUpOption() {
     return Row(
