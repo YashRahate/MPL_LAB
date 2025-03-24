@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:sca/screens/features/add_health_records/add_health_record_screen.dart';
 
 class HealthRecordsScreen extends StatefulWidget {
   const HealthRecordsScreen({super.key});
-
   @override
   State<HealthRecordsScreen> createState() => _HealthRecordsScreenState();
 }
@@ -38,11 +38,15 @@ class _HealthRecordsScreenState extends State<HealthRecordsScreen> {
               ),
             ),
             onPressed: () {
-              // Navigate to add health record screen
-              // To be implemented
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => AddHealthRecordScreen()),
+              );
             },
             icon: const Icon(Icons.add),
-            label: const Text('Add Health Record', style: TextStyle(fontSize: 16)),
+            label:
+                const Text('Add Health Record', style: TextStyle(fontSize: 16)),
           ),
         ],
       ),
