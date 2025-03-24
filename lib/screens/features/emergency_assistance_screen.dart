@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../services/emergency_service.dart';
 
 class EmergencyAssistanceScreen extends StatefulWidget {
   const EmergencyAssistanceScreen({super.key});
@@ -110,18 +111,41 @@ class _EmergencyAssistanceScreenState extends State<EmergencyAssistanceScreen> {
     );
   }
 
-  void _triggerEmergencyAlert(BuildContext context) {
-    // Logic to send emergency alerts would go here
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        backgroundColor: Colors.red,
-        content: Text(
-          'Emergency alert sent to your contacts',
-          style: TextStyle(fontSize: 16),
+void _triggerEmergencyAlert(BuildContext context) async {
+  try {
+    final emergencyAlertService = EmergencyAlertService();
+
+    // Send emergency alert
+    await emergencyAlertService.sendEmergencyAlert();
+
+    // Check if the widget is still mounted before showing a SnackBar
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.green,
+          content: Text(
+            'Emergency alert sent to your contacts',
+            style: TextStyle(fontSize: 16),
+          ),
+          duration: Duration(seconds: 5),
         ),
-        duration: Duration(seconds: 5),
-      ),
-    );
+      );
+    }
+  } catch (e) {
+    // Check if the widget is still mounted before showing a SnackBar
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            'Failed to send emergency alert: $e',
+            style: TextStyle(fontSize: 16),
+          ),
+          duration: Duration(seconds: 5),
+        ),
+      );
+    }
   }
+}
+
 }
