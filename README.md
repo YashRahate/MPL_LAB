@@ -1,16 +1,38 @@
-# sca
+# Senior Citizen Assistance
 
-A new Flutter project.
+A Flutter application designed to support senior citizens by providing timely medication reminders, centralized health record storage, caregiver connectivity, and emergency assistance.
 
-## Getting Started
+## 📱 App Features
 
-This project is a starting point for a Flutter application.
+### 💊 Medication Reminders
+- Notifies users about their daily medication schedule.
 
-A few resources to get you started if this is your first Flutter project:
+### 📂 Health Record Management
+- Store and share medical documents digitally.
+- Supports uploading health reports for easy access.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### 👨‍👩‍👧‍👦 Caregiver Connection
+- Connect family members or caregivers to monitor the senior's health.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 🚨 Emergency Assistance (SOS)
+- One-tap emergency alert feature for immediate help.
+
+## 🛠️ Built With
+
+- **Flutter**: UI toolkit for building natively compiled applications for mobile.
+- **Firebase Firestore**: For storing user and health data securely.
+- **Cloudinary**: For image/document storage of medical records.
+- **Flutter Local Notifications**: For medication reminders.
+
+## 📚 Documentation
+
+Comprehensive documentation for setup, features, and development guidelines can be found here:
+👉 [Senior Citizen Assistance - Documentation Repository](https://github.com/YashRahate/MPL_PRACTICALS)
+
+## 🤝 Contributing
+
+Contributions are welcome! Please open issues or submit pull requests for any improvements.
+
+## 📝 License
+
+This project is licensed under the MIT License.
